@@ -29,3 +29,9 @@ def read_item(item_id: int, q: Optional[str] = None):
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
+
+
+@app.post("/users", response_model=schemas.User)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = crud.create_user(db=db, user=user)
+    return db_user

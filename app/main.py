@@ -1,3 +1,4 @@
+from curses.ascii import HT
 from typing import Optional, List
 from webbrowser import get
 
@@ -48,3 +49,26 @@ def create_twitter_user(twitter_user: schemas.TwitterUserCreate, db: Session = D
         raise HTTPException(status_code=400, detail="User already exists")
     db_twitter_user = crud.create_twitter_user(db=db, twitter_user=twitter_user)
     return db_twitter_user
+
+
+@app.get("/twitter_user/{twitter_user_id}")
+def read_twitter_user_by_id(twitter_user_id: str, db: Session = Depends(get_db)):
+    twitter_user = crud.get_twitter_user(db, twitter_user_id=twitter_user_id)
+    if twitter_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return twitter_user
+
+@app.get("/twitter_user/{twitter_user_id}/tweets")
+def read_tweets_by_twitter_user_id(twitter_user_id: str, db: Session = Depends(get_db)):
+    twitter_user = crud.get_twitter_user(db, twitter_user_id=twitter_user_id)
+    if twitter_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return twitter_user.tweets
+
+@app.post("/tweets")
+def create_tweet(tweet: schemas.Tweet, db: Session = Depends(get_db)):
+    db_tweet = crud.get_tweet(db, tweet_id=tweet.id)
+    if db_tweet:
+        raise HTTPException(status_code=400, detail="Tweet already exists")
+    db_tweet = crud.create_tweet(db, tweet=tweet)
+    return db_tweet

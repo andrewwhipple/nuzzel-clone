@@ -16,6 +16,9 @@ def get_twitter_user(db: Session, twitter_user_id: str):
 def get_twitter_users(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.TwitterUser).offset(skip).limit(limit).all()
 
+def get_tweet(db: Session, tweet_id: str):
+    return db.query(models.Tweet).filter(models.Tweet.id == tweet_id).first()
+
 def create_user(db: Session, user: schemas.UserCreate):
     db_user = models.User(twitter_user_id=user.twitter_user_id)
     db.add(db_user)

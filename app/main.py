@@ -1,4 +1,5 @@
 from typing import Optional, List
+from webbrowser import get
 
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -30,8 +31,20 @@ def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
 
+@app.get("/twitter_users")
+def read_twitter_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    twitter_users = crud.get_twitter_users(db, skip=skip, limit=limit)
+    return twitter_users
 
 @app.post("/users", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.create_user(db=db, user=user)
     return db_user
+
+@app.post("/twitter_users", response_model=schemas.TwitterUser)
+def create_twitter_user(twitter_user: schemas.TwitterUserCreate, db: Session = Depends(get_db)):
+    db_twitter_user = crud.get_twitter_user(db=db, twitter_user_id=twitter_user.id)
+    if db_twitter_user:
+        raise HTTPException(status_code=400, detail="User already exists")
+    db_twitter_user = crud.create_twitter_user(db=db, twitter_user=twitter_user)
+    return db_twitter_user

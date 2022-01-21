@@ -37,12 +37,14 @@ class Tweet(BaseModel):
     class Config:
         orm_mode = True
 
-
-class TwitterUser(BaseModel):
+class TwitterUserCreate(BaseModel):
     id: str
     name: str
     url: str
     profile_image_url: str
+
+class TwitterUser(TwitterUserCreate):
+    
     tweets: List[Tweet] = []
 
     class Config:

@@ -43,8 +43,7 @@ class TwitterUser(BaseModel):
     name: str
     url: str
     profile_image_url: str
-    followers: List[Follow]
-    tweets: List[Tweet]
+    tweets: List[Tweet] = []
 
     class Config:
         orm_mode = True

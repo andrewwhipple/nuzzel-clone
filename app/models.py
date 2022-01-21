@@ -27,15 +27,15 @@ class TwitterUser(Base):
     url = Column(String)
     profile_image_url = Column(String)
 
+    tweets = relationship("Tweet", back_populates="twitter_user")
+
 
 class Follow(Base):
     __tablename__ = "follows"
 
     id = Column(Integer, primary_key=True, index=True)
-    follower_id = Column(String, ForeignKey("twitter_users.id"))
-    follower = relationship("TwitterUser", back_populates="following")
-    following_id = Column(String, ForeignKey("twitter_users.id"))
-
+    follower_id = Column(String)
+    following_id = Column(String)
 
 class Tweet(Base):
     __tablename__ = "tweets"

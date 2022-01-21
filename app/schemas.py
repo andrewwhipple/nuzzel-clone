@@ -5,7 +5,11 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class User(BaseModel):
+
+class UserCreate(BaseModel):
+    twitter_user_id: str
+
+class User(UserCreate):
     id: int
     twitter_user_id: str
 
@@ -13,11 +17,13 @@ class User(BaseModel):
         orm_mode = True
 
 
-class Follow(BaseModel):
-    id: int
+class FollowCreate(BaseModel):
     follower_id: str
     following_id: str
 
+class Follow(FollowCreate):
+    id: int
+    
     class Config:
         orm_mode = True
 

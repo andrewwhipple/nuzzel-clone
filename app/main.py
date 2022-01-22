@@ -10,7 +10,7 @@ from datetime import datetime, date
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas, twitter
+from app import crud, models, schemas
 from app.database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
@@ -128,4 +128,21 @@ def read_tweets_of_following_by_user_id(twitter_user_id: str, db: Session = Depe
 
     return tweets
 
+@app.post("/twitter_users/{twitter_user_id}/following")
+def get_following_by_user_id(twitter_user_id: str, db: Session = Depends(get_db), max_results: Optional[int] = 1000):
+    following = client.get_users_following(id=twitter_user_id,user_auth=True, max_results=max_results)
 
+    counter = 0
+    for following_user in following.data:
+        twitter_user = crud.get_twitter_user(db=db, twitter_user_id=following_user.id)
+        if not twitter_user:
+            create_twitter_user_from_id(twitter_user_id=following_user.id, db=db)
+            create_follows(schemas.FollowCreate(follower_id=following_user.id, following_id=twitter_user_id), db=db)
+            counter = counter + 1
+
+    return f'{counter} users created'
+    
+@app.get("/follows")
+def read_follows(db: Session = Depends(get_db)):
+    follows = crud.get_follows(db=db)
+    return follows

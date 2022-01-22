@@ -1,6 +1,6 @@
 from sqlite3 import Date
 from xmlrpc.client import DateTime
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -42,6 +42,6 @@ class Tweet(Base):
     text = Column(String)
     twitter_user_id = Column(String, ForeignKey("twitter_users.id"))
     twitter_user = relationship("TwitterUser", back_populates="tweets")
-    time_stamp = Column(String)
+    time_stamp = Column(DateTime)
     
 

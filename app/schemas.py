@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import List, Optional
 
 from typing import Optional
@@ -32,7 +32,7 @@ class Tweet(BaseModel):
     url: str
     text: str
     twitter_user_id: str
-    time_stamp = str
+    time_stamp: datetime
 
     class Config:
         orm_mode = True

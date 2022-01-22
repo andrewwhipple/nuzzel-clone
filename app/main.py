@@ -2,6 +2,8 @@ from curses.ascii import HT
 from typing import Optional, List
 from webbrowser import get
 
+from datetime import datetime, date
+
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -79,7 +81,7 @@ def create_follows(follow: schemas.FollowCreate, db: Session = Depends(get_db)):
     return db_follow
 
 @app.get("/twitter_user/{twitter_user_id}/following_tweets")
-def read_tweets_of_following_by_user_id(twitter_user_id: str, db: Session = Depends(get_db)):
+def read_tweets_of_following_by_user_id(twitter_user_id: str, db: Session = Depends(get_db), time_limit: Optional[int] = None):
     twitter_user = crud.get_twitter_user(db, twitter_user_id=twitter_user_id)
     if twitter_user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -89,6 +91,13 @@ def read_tweets_of_following_by_user_id(twitter_user_id: str, db: Session = Depe
 
     for follow in following:
         following = crud.get_twitter_user(db, twitter_user_id=follow.following_id)
-        tweets = tweets + following.tweets
+        
+        if time_limit:
+            for tweet in following.tweets:
+                print(tweet)
+                if (datetime.now() - tweet.time_stamp).seconds < (time_limit * 3600): #converting a time_limit in hours to seconds
+                    tweets.append(tweet)
+        else:
+            tweets = tweets + following.tweets
 
     return tweets

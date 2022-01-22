@@ -43,9 +43,11 @@ class TwitterUserCreate(BaseModel):
     url: str
     profile_image_url: str
 
+
 class TwitterUser(TwitterUserCreate):
     
     tweets: List[Tweet] = []
+    following: List[Follow] = []
 
     class Config:
         orm_mode = True

@@ -77,3 +77,18 @@ def create_tweet(tweet: schemas.Tweet, db: Session = Depends(get_db)):
 def create_follows(follow: schemas.FollowCreate, db: Session = Depends(get_db)):
     db_follow = crud.create_follow(db, follow=follow)
     return db_follow
+
+@app.get("/twitter_user/{twitter_user_id}/following_tweets")
+def read_tweets_of_following_by_user_id(twitter_user_id: str, db: Session = Depends(get_db)):
+    twitter_user = crud.get_twitter_user(db, twitter_user_id=twitter_user_id)
+    if twitter_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    following = twitter_user.following
+
+    tweets = []
+
+    for follow in following:
+        following = crud.get_twitter_user(db, twitter_user_id=follow.following_id)
+        tweets = tweets + following.tweets
+
+    return tweets

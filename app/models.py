@@ -12,12 +12,6 @@ class User(Base):
 
     twitter_user_id = Column(String, ForeignKey("twitter_users.id"))
 
-    #email = Column(String, unique=True, index=True)
-    #hashed_password = Column(String)
-    #is_active = Column(Boolean, default=True)
-
-    #items = relationship("Item", back_populates="owner")
-
 
 class TwitterUser(Base):
     __tablename__ = "twitter_users"
@@ -28,13 +22,15 @@ class TwitterUser(Base):
     profile_image_url = Column(String)
 
     tweets = relationship("Tweet", back_populates="twitter_user")
+    following = relationship("Follow", back_populates="follower")
 
 
 class Follow(Base):
     __tablename__ = "follows"
 
     id = Column(Integer, primary_key=True, index=True)
-    follower_id = Column(String)
+    follower_id = Column(String, ForeignKey("twitter_users.id"))
+    follower = relationship("TwitterUser", back_populates="following")
     following_id = Column(String)
 
 class Tweet(Base):

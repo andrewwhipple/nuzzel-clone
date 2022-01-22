@@ -72,3 +72,8 @@ def create_tweet(tweet: schemas.Tweet, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Tweet already exists")
     db_tweet = crud.create_tweet(db, tweet=tweet)
     return db_tweet
+
+@app.post("/follows")
+def create_follows(follow: schemas.FollowCreate, db: Session = Depends(get_db)):
+    db_follow = crud.create_follow(db, follow=follow)
+    return db_follow

@@ -1,8 +1,11 @@
 from re import L
+from sqlalchemy import schema
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.functions import user
 
 from app import models, schemas
+
+# gets
 
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
@@ -18,6 +21,9 @@ def get_twitter_users(db: Session, skip: int = 0, limit: int = 100):
 
 def get_tweet(db: Session, tweet_id: str):
     return db.query(models.Tweet).filter(models.Tweet.id == tweet_id).first()
+
+
+# creates
 
 def create_user(db: Session, user: schemas.UserCreate):
     db_user = models.User(twitter_user_id=user.twitter_user_id)
@@ -39,3 +45,10 @@ def create_tweet(db: Session, tweet: schemas.Tweet):
     db.commit()
     db.refresh(db_tweet)
     return db_tweet
+
+def create_follow(db: Session, follow: schemas.FollowCreate):
+    db_follow = models.Follow(follower_id=follow.follower_id, following_id=follow.following_id)
+    db.add(db_follow)
+    db.commit()
+    db.refresh(db_follow)
+    return db_follow

@@ -40,7 +40,6 @@ class Tweet(BaseModel):
 class TwitterUserCreate(BaseModel):
     id: str
     name: str
-    url: str
     profile_image_url: str
 
 

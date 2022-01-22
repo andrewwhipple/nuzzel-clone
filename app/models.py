@@ -18,7 +18,6 @@ class TwitterUser(Base):
 
     id = Column(String, primary_key=True, index=True)
     name = Column(String)
-    url = Column(String)
     profile_image_url = Column(String)
 
     tweets = relationship("Tweet", back_populates="twitter_user")

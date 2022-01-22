@@ -22,3 +22,27 @@ client = tweepy.Client(
 #for following_user in following.data:
     #print(following_user.profile_image_url)
 
+
+
+tweets = client.get_users_tweets(id='364355433',user_auth=True, max_results=10, tweet_fields=['entities','created_at'])
+
+for tweet in tweets.data:
+    #print(tweet.entities)
+    
+    print(tweet.id)
+    print(tweet.text)
+    print(tweet.created_at)
+
+
+    if tweet.entities:
+        meow = tweet.entities
+        if 'urls' in meow:
+            for url in meow['urls']:
+                print(url['expanded_url'])
+    
+    #print(tweet.entities)
+
+
+#entities.urls array,  expanded_url
+
+

@@ -137,7 +137,7 @@ def get_following_by_user_id(twitter_user_id: str, db: Session = Depends(get_db)
         twitter_user = crud.get_twitter_user(db=db, twitter_user_id=following_user.id)
         if not twitter_user:
             create_twitter_user_from_id(twitter_user_id=following_user.id, db=db)
-            create_follows(schemas.FollowCreate(follower_id=following_user.id, following_id=twitter_user_id), db=db)
+            create_follows(schemas.FollowCreate(follower_id=twitter_user_id, following_id=following_user.id), db=db)
             counter = counter + 1
 
     return f'{counter} users created'
@@ -146,3 +146,30 @@ def get_following_by_user_id(twitter_user_id: str, db: Session = Depends(get_db)
 def read_follows(db: Session = Depends(get_db)):
     follows = crud.get_follows(db=db)
     return follows
+
+
+@app.post("/twitter_user/{twitter_user_id}/tweets")
+def create_tweets_of_a_twitter_user_by_id(twitter_user_id: str, db: Session = Depends(get_db)):
+    tweets = client.get_users_tweets(id=twitter_user_id, user_auth=True, max_results=10, tweet_fields=['entities','created_at'])
+    
+    counter = 0
+    
+    for tweet in tweets.data:
+        tweet_url = ""
+
+        if tweet.entities:
+            entities_data = tweet.entities
+            if 'urls' in entities_data:
+                for url in entities_data['urls']:
+                    tweet_url = url['expanded_url']
+        
+        
+        tweet_create = schemas.Tweet(id=tweet.id, url=tweet_url, text=tweet.text, twitter_user_id=twitter_user_id, time_stamp=tweet.created_at)
+
+        db_tweet = crud.get_tweet(db=db, tweet_id=tweet_create.id)
+        if not db_tweet:
+            create_tweet(tweet=tweet_create, db=db)
+            counter = counter + 1
+    
+    
+    return f'{counter} tweets created'

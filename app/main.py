@@ -199,3 +199,17 @@ def create_tweets_of_following_by_id(twitter_user_id: str, db: Session = Depends
         counter = counter + 1
     
     return f'Tweets from {counter} followings created'
+
+
+
+@app.post("/users/{user_id}/fill_tree")
+def fill_tree_for_user(user_id: int, db: Session = Depends(get_db)):
+    user = crud.get_user(db=db, user_id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    twitter_user = crud.get_twitter_user(db=db, twitter_user_id=user.twitter_user_id)
+    if not twitter_user:
+        twitter_user = create_twitter_user_from_id(twitter_user_id=user.twitter_user_id, db=db)
+    get_following_by_user_id(twitter_user_id=twitter_user.id, db=db, max_results=10)
+    create_tweets_of_following_by_id(twitter_user_id=twitter_user.id, db=db)
+    return "Done"

@@ -5,7 +5,7 @@ from webbrowser import get
 import os
 import tweepy
 
-from datetime import datetime, date
+from datetime import datetime, timedelta, date
 
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -118,16 +118,14 @@ def read_tweets_of_following_by_user_id(twitter_user_id: str, db: Session = Depe
 
     for follow in following:
         following = crud.get_twitter_user(db, twitter_user_id=follow.following_id)
-
         if time_limit:
             for tweet in following.tweets:
-                
                 if urls_only:
                     if (not tweet.url == "") and (tweet.url.find("twitter.com") == -1):
-                        if (datetime.now() - tweet.time_stamp).seconds < (time_limit * 3600): #converting a time_limit in hours to seconds
+                        if (datetime.now() - tweet.time_stamp) < timedelta(hours=time_limit): #converting a time_limit in hours to seconds
                             tweets.append(tweet)
                 else:
-                    if (datetime.now() - tweet.time_stamp).seconds < (time_limit * 3600): #converting a time_limit in hours to seconds
+                    if (datetime.now() - tweet.time_stamp) < timedelta(hours=time_limit): #converting a time_limit in hours to seconds
                         tweets.append(tweet)
         else:
             if urls_only:
@@ -166,22 +164,27 @@ def create_tweets_of_a_twitter_user_by_id(twitter_user_id: str, db: Session = De
     
     counter = 0
     
-    for tweet in tweets.data:
-        tweet_url = ""
+    #print(f'Twitter user ID = {twitter_user_id}')
+    #print(tweets)
 
-        if tweet.entities:
-            entities_data = tweet.entities
-            if 'urls' in entities_data:
-                for url in entities_data['urls']:
-                    tweet_url = url['expanded_url']
-        
-        
-        tweet_create = schemas.Tweet(id=tweet.id, url=tweet_url, text=tweet.text, twitter_user_id=twitter_user_id, time_stamp=tweet.created_at)
+    if tweets.data:
 
-        db_tweet = crud.get_tweet(db=db, tweet_id=tweet_create.id)
-        if not db_tweet:
-            create_tweet(tweet=tweet_create, db=db)
-            counter = counter + 1
+        for tweet in tweets.data:
+            tweet_url = ""
+
+            if tweet.entities:
+                entities_data = tweet.entities
+                if 'urls' in entities_data:
+                    for url in entities_data['urls']:
+                        tweet_url = url['expanded_url']
+            
+            
+            tweet_create = schemas.Tweet(id=tweet.id, url=tweet_url, text=tweet.text, twitter_user_id=twitter_user_id, time_stamp=tweet.created_at)
+
+            db_tweet = crud.get_tweet(db=db, tweet_id=tweet_create.id)
+            if not db_tweet:
+                create_tweet(tweet=tweet_create, db=db)
+                counter = counter + 1
     
     
     return f'{counter} tweets created'
@@ -210,6 +213,6 @@ def fill_tree_for_user(user_id: int, db: Session = Depends(get_db)):
     twitter_user = crud.get_twitter_user(db=db, twitter_user_id=user.twitter_user_id)
     if not twitter_user:
         twitter_user = create_twitter_user_from_id(twitter_user_id=user.twitter_user_id, db=db)
-    get_following_by_user_id(twitter_user_id=twitter_user.id, db=db, max_results=10)
-    create_tweets_of_following_by_id(twitter_user_id=twitter_user.id, db=db)
-    return "Done"
+    get_following_by_user_id(twitter_user_id=twitter_user.id, db=db, max_results=100)
+    tweets_created = create_tweets_of_following_by_id(twitter_user_id=twitter_user.id, db=db)
+    return "Done. " + tweets_created

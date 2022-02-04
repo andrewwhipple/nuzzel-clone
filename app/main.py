@@ -108,7 +108,7 @@ def create_follows(follow: schemas.FollowCreate, db: Session = Depends(get_db)):
     return db_follow
 
 @app.get("/twitter_user/{twitter_user_id}/following_tweets")
-def read_tweets_of_following_by_user_id(twitter_user_id: str, db: Session = Depends(get_db), time_limit: Optional[int] = None, urls_only: Optional[bool] = False):
+def read_tweets_of_following_by_twitter_user_id(twitter_user_id: str, db: Session = Depends(get_db), time_limit: Optional[int] = None, urls_only: Optional[bool] = False):
     twitter_user = crud.get_twitter_user(db, twitter_user_id=twitter_user_id)
     if twitter_user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -136,6 +136,13 @@ def read_tweets_of_following_by_user_id(twitter_user_id: str, db: Session = Depe
                 tweets = tweets + following.tweets
 
     return tweets
+
+@app.get("/user/{user_id}/following_tweets")
+def read_tweets_of_following_by_user_id(user_id: int, db: Session = Depends(get_db), time_limit: Optional[int] = None, urls_only: Optional[bool] = False):
+    user = crud.get_user(db=db, user_id=user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return read_tweets_of_following_by_twitter_user_id(twitter_user_id=user.twitter_user_id, db=db, time_limit=time_limit, urls_only=urls_only)
 
 @app.post("/twitter_users/{twitter_user_id}/following")
 def get_following_by_user_id(twitter_user_id: str, db: Session = Depends(get_db), max_results: Optional[int] = 1000):

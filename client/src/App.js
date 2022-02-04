@@ -13,6 +13,10 @@ class LinkList extends React.Component {
     linksArray.push(<Link link="squirrel.edu" sharers={sharers2}/>);
     linksArray.push(<Link link="nice.cool" sharers={sharers2}/>);
 
+    
+
+
+
     return (
       <div>
         {linksArray}
@@ -55,6 +59,15 @@ class Link extends React.Component {
 
 
 function App() {
+  
+  fetch('/user/1/following_tweets', {
+    method: 'GET',
+  }).then((res) => {
+    res.text().then((responseText) => {
+      console.log(responseText);
+    })
+  }).catch(() => console.error('Error in fetching tweets'));
+  
   return (
     <LinkList/>
   );

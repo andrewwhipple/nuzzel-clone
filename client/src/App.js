@@ -16,7 +16,7 @@ class LinkList extends React.Component {
   }
 
   getLinks() {
-    fetch('/user/1/following_tweets?urls_only=true&time_limit=24', {
+    fetch('/api/user/1/following_tweets?urls_only=true&time_limit=24', {
       method: 'GET',
     }).then((res) => {
       res.json().then((responseJson) => {
@@ -88,7 +88,7 @@ class Link extends React.Component {
   
 
   getUser(user_id) {
-    fetch('/twitter_user/' + user_id, {
+    fetch('/api/twitter_user/' + user_id, {
       method: 'GET',
     }).then((res) => {
       res.json().then((responseJson) => {

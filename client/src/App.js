@@ -16,11 +16,11 @@ class LinkList extends React.Component {
   }
 
   getLinks() {
-    fetch('/user/1/following_tweets?urls_only=true', {
+    fetch('/user/1/following_tweets?urls_only=true&time_limit=24', {
       method: 'GET',
     }).then((res) => {
       res.json().then((responseJson) => {
-        console.log(responseJson);
+        //console.log(responseJson);
         this.setState(
           {
             links: responseJson
@@ -34,51 +34,37 @@ class LinkList extends React.Component {
   
   render() {
     
-    //this.getLinks();
-
     let linksArray = [];
     let linksDict = {};
     for (let link in this.state.links) {
-      //console.log(this.state.links[link]);
 
       if (this.state.links[link].url in linksDict) {
-        console.log(linksDict[this.state.links[link].url]);
         let sharers = linksDict[this.state.links[link].url];
-        sharers.push(this.state.links[link].twitter_user_id)
+        if (!sharers.find((name) => name == this.state.links[link].name)) {
+          sharers.push(this.state.links[link].name);
+        }
+        
         linksDict[this.state.links[link].url] = sharers;
 
       } else {
-        //console.log(this.state.links[link].url);
-        linksDict[this.state.links[link].url] = [this.state.links[link].twitter_user_id];
+        linksDict[this.state.links[link].url] = [this.state.links[link].name];
       }
-      //console.log(linksDict);
-      
-
-      //check if the url is already in the links dictionary
-      //if yes:
-      //  add to sharers
-      //if no:
-      //  create a new link with sharers of the twitter_user_id for now, eventually connect to get the twitter user name from the background 
-
+    
     }
 
     for (let new_link in linksDict) {
-      linksArray.push(<Link link={new_link} sharers={linksDict[new_link]}/>);
+      linksArray.push(<Link key={new_link} link={new_link} sharers={linksDict[new_link]}/>);
     }
 
-
-
-
-    //let linksArray = [];
-    //let sharers1 = ["Andrew", "Jane"]
-    //let sharers2 = ["Bob"]
-    //linksArray.push(<Link link="meow.com" sharers={sharers1}/>);
-    //linksArray.push(<Link link="squirrel.edu" sharers={sharers2}/>);
-    //linksArray.push(<Link link="nice.cool" sharers={sharers2}/>);
-
-    
-
-
+    linksArray.sort((first, second) => {
+      if (first.props.sharers.length > second.props.sharers.length) {
+        return -1;
+      } else if (first.props.sharers.length < second.props.sharers.length) {
+        return 1;
+      } else {
+        return 0;
+      }
+    })
 
     return (
       <div>
@@ -90,16 +76,47 @@ class LinkList extends React.Component {
 }
 
 class Link extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      sharers: ""
+    }
+
+    this.getUser = this.getUser.bind(this);
+
+  }
+  
+
+  getUser(user_id) {
+    fetch('/twitter_user/' + user_id, {
+      method: 'GET',
+    }).then((res) => {
+      res.json().then((responseJson) => {
+        //console.log(responseJson);
+        let new_sharers = this.state.sharers;
+        new_sharers = new_sharers + responseJson.name;
+
+        if (2 != this.props.sharers.length - 1) {
+          new_sharers = new_sharers + ", "
+        }
+        this.setState({
+          sharers: new_sharers
+        });
+      })
+    }).catch(() => console.error('Error in fetching users'));
+  }
+
+
   render() {
-
-    let sharers = "";
-
+    let new_sharers = ""
     for (var sharer in this.props.sharers) {
-      sharers = sharers + this.props.sharers[sharer];
+      new_sharers = new_sharers + this.props.sharers[sharer];
       if (sharer != this.props.sharers.length - 1) {
-          sharers = sharers + ", "
+          new_sharers = new_sharers + ", "
       }
     }
+
+
 
 
 
@@ -109,7 +126,7 @@ class Link extends React.Component {
       <ul>
         <li>The link url: <a href={this.props.link}>{this.props.link}</a></li>
         <li>The number of people who shared it: {this.props.sharers.length}</li>
-        <li>The names of the people who shared it: {sharers}</li>  
+        <li>The names of the people who shared it: {new_sharers}</li>  
       </ul>
       
       

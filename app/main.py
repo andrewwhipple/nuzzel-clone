@@ -123,14 +123,17 @@ def read_tweets_of_following_by_twitter_user_id(twitter_user_id: str, db: Sessio
                 if urls_only:
                     if (not tweet.url == "") and (tweet.url.find("twitter.com") == -1):
                         if (datetime.now() - tweet.time_stamp) < timedelta(hours=time_limit): #converting a time_limit in hours to seconds
+                            tweet.name = following.name
                             tweets.append(tweet)
                 else:
                     if (datetime.now() - tweet.time_stamp) < timedelta(hours=time_limit): #converting a time_limit in hours to seconds
+                        tweet.name = following.name
                         tweets.append(tweet)
         else:
             if urls_only:
                 for tweet in following.tweets:
                     if (not tweet.url == "") and (tweet.url.find("twitter.com") == -1):
+                        tweet.name = following.name
                         tweets.append(tweet)
             else:
                 tweets = tweets + following.tweets
@@ -220,6 +223,6 @@ def fill_tree_for_user(user_id: int, db: Session = Depends(get_db)):
     twitter_user = crud.get_twitter_user(db=db, twitter_user_id=user.twitter_user_id)
     if not twitter_user:
         twitter_user = create_twitter_user_from_id(twitter_user_id=user.twitter_user_id, db=db)
-    get_following_by_user_id(twitter_user_id=twitter_user.id, db=db, max_results=100)
+    get_following_by_user_id(twitter_user_id=twitter_user.id, db=db, max_results=400)
     tweets_created = create_tweets_of_following_by_id(twitter_user_id=twitter_user.id, db=db)
     return "Done. " + tweets_created

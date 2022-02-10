@@ -37,23 +37,23 @@ def read_root():
     return {"Hello": "World"}
 
 
-@app.get("/users")
+@app.get("/api/users")
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
 
-@app.get("/twitter_users")
+@app.get("/api/twitter_users")
 def read_twitter_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     twitter_users = crud.get_twitter_users(db, skip=skip, limit=limit)
     return twitter_users
 
-@app.post("/users", response_model=schemas.User)
+@app.post("/api/users", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.create_user(db=db, user=user)
     return db_user
 
 
-@app.post("/twitter_users/{twitter_user_id}", response_model=schemas.TwitterUser)
+@app.post("/api/twitter_users/{twitter_user_id}", response_model=schemas.TwitterUser)
 def create_twitter_user_from_id(twitter_user_id: str, db: Session = Depends(get_db)):
     db_twitter_user = crud.get_twitter_user(db=db, twitter_user_id=twitter_user_id)
     if db_twitter_user:
@@ -65,7 +65,7 @@ def create_twitter_user_from_id(twitter_user_id: str, db: Session = Depends(get_
 
     return db_twitter_user
 
-@app.post("/twitter_users", response_model=schemas.TwitterUser)
+@app.post("/api/twitter_users", response_model=schemas.TwitterUser)
 def create_twitter_user(twitter_user: schemas.TwitterUserCreate, db: Session = Depends(get_db)):
     db_twitter_user = crud.get_twitter_user(db=db, twitter_user_id=twitter_user.id)
     if db_twitter_user:
@@ -80,21 +80,21 @@ def get_twitter_user_from_twitter(twitter_user_id: str):
     return(twitter_user_create)
 
 
-@app.get("/twitter_user/{twitter_user_id}")
+@app.get("/api/twitter_user/{twitter_user_id}")
 def read_twitter_user_by_id(twitter_user_id: str, db: Session = Depends(get_db)):
     twitter_user = crud.get_twitter_user(db, twitter_user_id=twitter_user_id)
     if twitter_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return twitter_user
 
-@app.get("/twitter_user/{twitter_user_id}/tweets")
+@app.get("/api/twitter_user/{twitter_user_id}/tweets")
 def read_tweets_by_twitter_user_id(twitter_user_id: str, db: Session = Depends(get_db)):
     twitter_user = crud.get_twitter_user(db, twitter_user_id=twitter_user_id)
     if twitter_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return twitter_user.tweets
 
-@app.post("/tweets")
+@app.post("/api/tweets")
 def create_tweet(tweet: schemas.Tweet, db: Session = Depends(get_db)):
     db_tweet = crud.get_tweet(db, tweet_id=tweet.id)
     if db_tweet:
@@ -102,12 +102,12 @@ def create_tweet(tweet: schemas.Tweet, db: Session = Depends(get_db)):
     db_tweet = crud.create_tweet(db, tweet=tweet)
     return db_tweet
 
-@app.post("/follows")
+@app.post("/api/follows")
 def create_follows(follow: schemas.FollowCreate, db: Session = Depends(get_db)):
     db_follow = crud.create_follow(db, follow=follow)
     return db_follow
 
-@app.get("/twitter_user/{twitter_user_id}/following_tweets")
+@app.get("/api/twitter_user/{twitter_user_id}/following_tweets")
 def read_tweets_of_following_by_twitter_user_id(twitter_user_id: str, db: Session = Depends(get_db), time_limit: Optional[int] = None, urls_only: Optional[bool] = False):
     twitter_user = crud.get_twitter_user(db, twitter_user_id=twitter_user_id)
     if twitter_user is None:
@@ -140,14 +140,14 @@ def read_tweets_of_following_by_twitter_user_id(twitter_user_id: str, db: Sessio
 
     return tweets
 
-@app.get("/user/{user_id}/following_tweets")
+@app.get("/api/user/{user_id}/following_tweets")
 def read_tweets_of_following_by_user_id(user_id: int, db: Session = Depends(get_db), time_limit: Optional[int] = None, urls_only: Optional[bool] = False):
     user = crud.get_user(db=db, user_id=user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return read_tweets_of_following_by_twitter_user_id(twitter_user_id=user.twitter_user_id, db=db, time_limit=time_limit, urls_only=urls_only)
 
-@app.post("/twitter_users/{twitter_user_id}/following")
+@app.post("/api/twitter_users/{twitter_user_id}/following")
 def get_following_by_user_id(twitter_user_id: str, db: Session = Depends(get_db), max_results: Optional[int] = 1000):
     following = client.get_users_following(id=twitter_user_id,user_auth=True, max_results=max_results)
 
@@ -161,13 +161,13 @@ def get_following_by_user_id(twitter_user_id: str, db: Session = Depends(get_db)
 
     return f'{counter} users created'
     
-@app.get("/follows")
+@app.get("/api/follows")
 def read_follows(db: Session = Depends(get_db)):
     follows = crud.get_follows(db=db)
     return follows
 
 
-@app.post("/twitter_user/{twitter_user_id}/tweets")
+@app.post("/api/twitter_user/{twitter_user_id}/tweets")
 def create_tweets_of_a_twitter_user_by_id(twitter_user_id: str, db: Session = Depends(get_db)):
 
     tweets = client.get_users_tweets(id=twitter_user_id, user_auth=True, max_results=10, tweet_fields=['entities','created_at'])
@@ -200,7 +200,7 @@ def create_tweets_of_a_twitter_user_by_id(twitter_user_id: str, db: Session = De
     return f'{counter} tweets created'
 
 
-@app.post("/twitter_user/{twitter_user_id}/following_tweets")
+@app.post("/api/twitter_user/{twitter_user_id}/following_tweets")
 def create_tweets_of_following_by_id(twitter_user_id: str, db: Session = Depends(get_db)):
     twitter_user = crud.get_twitter_user(db=db, twitter_user_id=twitter_user_id)
     if not twitter_user:
@@ -215,7 +215,7 @@ def create_tweets_of_following_by_id(twitter_user_id: str, db: Session = Depends
 
 
 
-@app.post("/users/{user_id}/fill_tree")
+@app.post("/api/users/{user_id}/fill_tree")
 def fill_tree_for_user(user_id: int, db: Session = Depends(get_db)):
     user = crud.get_user(db=db, user_id=user_id)
     if not user:

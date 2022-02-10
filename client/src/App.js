@@ -16,7 +16,7 @@ class LinkList extends React.Component {
   }
 
   getLinks() {
-    fetch('/user/1/following_tweets?urls_only=true', {
+    fetch('/api/user/1/following_tweets?urls_only=true', {
       method: 'GET',
     }).then((res) => {
       res.json().then((responseJson) => {

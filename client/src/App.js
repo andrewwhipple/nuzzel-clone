@@ -16,7 +16,7 @@ class LinkList extends React.Component {
   }
 
   getLinks() {
-    fetch('/api/users/1/following_tweets', {
+    fetch('/api/users/1/fill_tree', {
       method: 'POST'
     }).then((res) => {
       console.log("New tweets grabbed");

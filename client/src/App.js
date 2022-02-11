@@ -12,17 +12,19 @@ class LinkList extends React.Component {
     }
 
     this.getLinks = this.getLinks.bind(this);
+    this.fillTree = this.fillTree.bind(this);
 
   }
 
-  getLinks() {
+  fillTree() {
     fetch('/api/users/1/fill_tree', {
       method: 'POST'
     }).then((res) => {
       console.log("New tweets grabbed");
     }).catch(() => console.log('Error filling tree'));
-    
-    
+  }
+
+  getLinks() {
     fetch('/api/user/1/following_tweets?urls_only=true&time_limit=24', {
       method: 'GET',
     }).then((res) => {
@@ -77,6 +79,7 @@ class LinkList extends React.Component {
       <div>
         {linksArray}
         <button type="button" onClick={this.getLinks}>Refresh</button>
+        <button type="button" onClick={this.fillTree}>Fill tree</button>
       </div>
     )
   }

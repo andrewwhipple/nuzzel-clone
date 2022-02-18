@@ -24,14 +24,16 @@ client = tweepy.Client(
 
 
 
-tweets = client.get_users_tweets(id='364355433',user_auth=True, max_results=10, tweet_fields=['entities','created_at'])
+tweets = client.get_users_tweets(id='364355433',user_auth=True, max_results=10, tweet_fields=['entities','created_at'], expansions=['author_id'])
+
+print(tweets)
 
 for tweet in tweets.data:
     #print(tweet.entities)
     
-    print(tweet.id)
-    print(tweet.text)
-    print(tweet.created_at)
+    #print(tweet.users)
+    #print(tweet.text)
+    #print(tweet.created_at)
 
 
     if tweet.entities:

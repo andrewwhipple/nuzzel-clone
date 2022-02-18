@@ -7,7 +7,7 @@ import tweepy
 
 from datetime import datetime, timedelta, date
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -214,15 +214,23 @@ def create_tweets_of_following_by_id(twitter_user_id: str, db: Session = Depends
     return f'Tweets from {counter} followings created'
 
 
+def fill_tree_for_user(twitter_user_id: str, db: Session = Depends(get_db)):
+    print('Started filling trees')
+    get_following_by_user_id(twitter_user_id=twitter_user_id, db=db, max_results=400)
+    tweets_created = create_tweets_of_following_by_id(twitter_user_id=twitter_user_id, db=db)
+    print(tweets_created + ' tweets created')
+
+
+
 
 @app.post("/api/users/{user_id}/fill_tree")
-def fill_tree_for_user(user_id: int, db: Session = Depends(get_db)):
+def start_fill_tree_task(user_id: int, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     user = crud.get_user(db=db, user_id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     twitter_user = crud.get_twitter_user(db=db, twitter_user_id=user.twitter_user_id)
     if not twitter_user:
         twitter_user = create_twitter_user_from_id(twitter_user_id=user.twitter_user_id, db=db)
-    get_following_by_user_id(twitter_user_id=twitter_user.id, db=db, max_results=400)
-    tweets_created = create_tweets_of_following_by_id(twitter_user_id=twitter_user.id, db=db)
-    return "Done. " + tweets_created
+    background_tasks.add_task(fill_tree_for_user, twitter_user.id, db)
+    return "Started filling tree"
+

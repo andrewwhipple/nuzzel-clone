@@ -76,10 +76,13 @@ class LinkList extends React.Component {
     })
 
     return (
-      <div>
+      <div class="link-list">
         {linksArray}
-        <button type="button" onClick={this.getLinks}>Refresh</button>
-        <button type="button" onClick={this.fillTree}>Fill tree</button>
+        <div class="buttons">
+          <button type="button" onClick={this.getLinks}>Refresh</button>
+          <button type="button" onClick={this.fillTree}>Fill tree</button>
+        </div>
+        
       </div>
     )
   }
@@ -131,17 +134,14 @@ class Link extends React.Component {
 
 
     return (
-      <>
-      <p>A link has: </p>
-      <ul>
+      <div class="link">
+        <p>A link has: </p>
+        <ul>
         <li>The link url: <a href={this.props.link}>{this.props.link}</a></li>
-        <li>The number of people who shared it: {this.props.sharers.length}</li>
-        <li>The names of the people who shared it: {new_sharers}</li>  
-      </ul>
-      
-      
-      
-      </>
+          <li>The number of people who shared it: {this.props.sharers.length}</li>
+          <li>The names of the people who shared it: {new_sharers}</li>  
+        </ul>
+      </div>
     )
   }
 

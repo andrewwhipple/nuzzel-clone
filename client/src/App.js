@@ -49,14 +49,29 @@ class LinkList extends React.Component {
 
       if (this.state.links[link].url in linksDict) {
         let sharers = linksDict[this.state.links[link].url];
-        if (!sharers.find((name) => name == this.state.links[link].name)) {
-          sharers.push(this.state.links[link].name);
+        
+        if (!sharers.find((sharer) => sharer.username == this.state.links[link].username)) {
+          sharers.push(
+            {
+              "name": this.state.links[link].name,
+              "username": this.state.links[link].username,
+              "id": this.state.links[link].id
+            }
+          );
         }
         
         linksDict[this.state.links[link].url] = sharers;
 
       } else {
-        linksDict[this.state.links[link].url] = [this.state.links[link].name];
+        linksDict[this.state.links[link].url] = [
+          {
+            "name": this.state.links[link].name,
+            "username": this.state.links[link].username,
+            "id": this.state.links[link].id
+          }
+          
+          
+        ];
       }
     
     }
@@ -87,6 +102,22 @@ class LinkList extends React.Component {
     )
   }
 }
+
+
+class LinkSharer extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    return (
+      <div><p>meow</p></div>
+    )
+
+  }
+
+}
+
 
 class Link extends React.Component {
   constructor(props) {
@@ -121,12 +152,15 @@ class Link extends React.Component {
 
 
   render() {
-    let new_sharers = ""
+    let sharer_links = []
     for (var sharer in this.props.sharers) {
-      new_sharers = new_sharers + this.props.sharers[sharer];
+      let tweet_url = 'https://twitter.com/' + this.props.sharers[sharer].username + '/status/' + this.props.sharers[sharer].id;
+      console.log(tweet_url);
+      sharer_links.push(<a href={tweet_url}>{this.props.sharers[sharer].name}</a>)
       if (sharer != this.props.sharers.length - 1) {
-          new_sharers = new_sharers + ", "
+          sharer_links.push(", ");
       }
+
     }
 
 
@@ -139,7 +173,7 @@ class Link extends React.Component {
         <ul>
         <li>The link url: <a href={this.props.link}>{this.props.link}</a></li>
           <li>The number of people who shared it: {this.props.sharers.length}</li>
-          <li>The names of the people who shared it: {new_sharers}</li>  
+          <li>The names of the people who shared it: {sharer_links}</li>  
         </ul>
       </div>
     )

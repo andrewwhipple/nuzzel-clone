@@ -41,6 +41,7 @@ class TwitterUserCreate(BaseModel):
     id: str
     name: str
     profile_image_url: str
+    username: str
 
 
 class TwitterUser(TwitterUserCreate):

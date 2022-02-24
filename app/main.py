@@ -75,8 +75,8 @@ def create_twitter_user(twitter_user: schemas.TwitterUserCreate, db: Session = D
 
 
 def get_twitter_user_from_twitter(twitter_user_id: str):
-    twitter_user_data = client.get_user(id=twitter_user_id, user_auth=True, user_fields=['name', 'profile_image_url'])
-    twitter_user_create = schemas.TwitterUserCreate(id=twitter_user_data.data.id, name=twitter_user_data.data.name, profile_image_url=twitter_user_data.data.profile_image_url)
+    twitter_user_data = client.get_user(id=twitter_user_id, user_auth=True, user_fields=['name', 'profile_image_url', 'username'])
+    twitter_user_create = schemas.TwitterUserCreate(id=twitter_user_data.data.id, name=twitter_user_data.data.name, profile_image_url=twitter_user_data.data.profile_image_url, username=twitter_user_data.data.username)
     return(twitter_user_create)
 
 
@@ -124,16 +124,19 @@ def read_tweets_of_following_by_twitter_user_id(twitter_user_id: str, db: Sessio
                     if (not tweet.url == "") and (tweet.url.find("twitter.com") == -1):
                         if (datetime.now() - tweet.time_stamp) < timedelta(hours=time_limit): #converting a time_limit in hours to seconds
                             tweet.name = following.name
+                            tweet.username = following.username
                             tweets.append(tweet)
                 else:
                     if (datetime.now() - tweet.time_stamp) < timedelta(hours=time_limit): #converting a time_limit in hours to seconds
                         tweet.name = following.name
+                        tweet.username = following.username
                         tweets.append(tweet)
         else:
             if urls_only:
                 for tweet in following.tweets:
                     if (not tweet.url == "") and (tweet.url.find("twitter.com") == -1):
                         tweet.name = following.name
+                        tweet.username = following.username
                         tweets.append(tweet)
             else:
                 tweets = tweets + following.tweets

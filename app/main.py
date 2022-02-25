@@ -266,3 +266,11 @@ def get_new_tweets_from_all_twitter_users():
 def get_new_tweets_task():
     #print('Started running get new tweets task')
     get_new_tweets_from_all_twitter_users()
+
+@app.on_event("startup")
+@repeat_every(seconds=60*60*24) # 24 hours
+def get_new_followings_task():
+    db = SessionLocal()
+    users = read_users(skip=0, limit=100, db=db)
+    for user in users:
+        get_following_by_user_id(twitter_user_id=user.twitter_user_id, db=db)

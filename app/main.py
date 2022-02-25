@@ -224,10 +224,10 @@ def create_tweets_of_following_by_id(twitter_user_id: str, db: Session = Depends
 
 
 def fill_tree_for_user(twitter_user_id: str, db: Session = Depends(get_db)):
-    print('Started filling trees')
+    #print('Started filling trees')
     get_following_by_user_id(twitter_user_id=twitter_user_id, db=db, max_results=400)
     tweets_created = create_tweets_of_following_by_id(twitter_user_id=twitter_user_id, db=db)
-    print(tweets_created + ' tweets created')
+    #print(tweets_created + ' tweets created')
 
 
 
@@ -256,13 +256,13 @@ def get_new_tweets_from_all_twitter_users():
     else:    
         for twitter_user in twitter_users:
             response = create_tweets_of_a_twitter_user_by_id(twitter_user_id=twitter_user.id, db=db)
-            print(f'{response} from {twitter_user.name}')
-    print('Done getting new tweets')
+            #print(f'{response} from {twitter_user.name}')
+    #print('Done getting new tweets')
 
 
 
 @app.on_event("startup")
 @repeat_every(seconds=60*60) # 8 hour
 def get_new_tweets_task():
-    print('Started running get new tweets task')
+    #print('Started running get new tweets task')
     get_new_tweets_from_all_twitter_users()

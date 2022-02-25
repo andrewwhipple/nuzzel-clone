@@ -131,3 +131,4 @@ dmypy.json
 #  SQLite DB
 sql_app.db
 client/package-lock.json
+.vscode/launch.json

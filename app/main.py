@@ -26,12 +26,17 @@ client = tweepy.Client(
     access_token_secret=os.environ['TWITTER_ACCESS_TOKEN_SECRET']
 )
 
+last_paginated_users_max = 0
+page_size = 100
+
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+
 
 @app.get("/")
 def read_root():
@@ -238,13 +243,26 @@ def start_fill_tree_task(user_id: int, background_tasks: BackgroundTasks, db: Se
     background_tasks.add_task(fill_tree_for_user, twitter_user.id, db)
     return "Started filling tree"
 
-@app.on_event("startup")
-@repeat_every(seconds=60*60*8) # 8 hour
+
+
 def get_new_tweets_from_all_twitter_users():
     db = SessionLocal()
-    print('Started running get new tweets task')
-    twitter_users = crud.get_twitter_users(db=db, skip=0, limit=400)
-    for twitter_user in twitter_users:
-        response = create_tweets_of_a_twitter_user_by_id(twitter_user_id=twitter_user.id, db=db)
-        print(f'{response} from {twitter_user.name}')
+    global last_paginated_users_max
+    global page_size
+    twitter_users = crud.get_twitter_users(db=db, skip=last_paginated_users_max, limit=page_size)
+    last_paginated_users_max = last_paginated_users_max + page_size
+    if not twitter_users:
+        last_paginated_users_max = 0
+    else:    
+        for twitter_user in twitter_users:
+            response = create_tweets_of_a_twitter_user_by_id(twitter_user_id=twitter_user.id, db=db)
+            print(f'{response} from {twitter_user.name}')
     print('Done getting new tweets')
+
+
+
+@app.on_event("startup")
+@repeat_every(seconds=60*60) # 8 hour
+def get_new_tweets_task():
+    print('Started running get new tweets task')
+    get_new_tweets_from_all_twitter_users()

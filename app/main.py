@@ -8,6 +8,7 @@ import tweepy
 from datetime import datetime, timedelta, date
 
 from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks
+from fastapi_utils.tasks import repeat_every
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -237,3 +238,13 @@ def start_fill_tree_task(user_id: int, background_tasks: BackgroundTasks, db: Se
     background_tasks.add_task(fill_tree_for_user, twitter_user.id, db)
     return "Started filling tree"
 
+@app.on_event("startup")
+@repeat_every(seconds=60*60) # 1 hour
+def get_new_tweets_from_all_twitter_users():
+    db = SessionLocal()
+    print('Started running get new tweets task')
+    twitter_users = crud.get_twitter_users(db=db, skip=0, limit=400)
+    print(twitter_users)
+    for twitter_user in twitter_users:
+        response = create_tweets_of_a_twitter_user_by_id(twitter_user_id=twitter_user.id, db=db)
+        print(f'{response} from {twitter_user.name}')

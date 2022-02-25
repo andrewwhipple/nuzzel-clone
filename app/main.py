@@ -239,7 +239,7 @@ def start_fill_tree_task(user_id: int, background_tasks: BackgroundTasks, db: Se
     return "Started filling tree"
 
 @app.on_event("startup")
-@repeat_every(seconds=60*60) # 1 hour
+@repeat_every(seconds=60*60*8) # 8 hour
 def get_new_tweets_from_all_twitter_users():
     db = SessionLocal()
     print('Started running get new tweets task')

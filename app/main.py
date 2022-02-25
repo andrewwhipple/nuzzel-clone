@@ -248,3 +248,4 @@ def get_new_tweets_from_all_twitter_users():
     for twitter_user in twitter_users:
         response = create_tweets_of_a_twitter_user_by_id(twitter_user_id=twitter_user.id, db=db)
         print(f'{response} from {twitter_user.name}')
+    print('Done getting new tweets')

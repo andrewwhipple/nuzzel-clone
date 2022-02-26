@@ -11,23 +11,37 @@ from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks
 from fastapi_utils.tasks import repeat_every
 from sqlalchemy.orm import Session
 
+from pydantic import BaseSettings
+
 from app import crud, models, schemas
 from app.database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
 
+class Settings(BaseSettings):
+    twitter_token: str
+    twitter_api_key: str
+    twitter_api_secret: str
+    twitter_access_token: str
+    twitter_access_token_secret: str
+    get_followers: bool = False
+
+settings = Settings()
 app = FastAPI()
 
 client = tweepy.Client(
-    bearer_token=os.environ['TWITTER_TOKEN'],
-    consumer_key=os.environ['TWITTER_API_KEY'],
-    consumer_secret=os.environ['TWITTER_API_SECRET'],
-    access_token=os.environ['TWITTER_ACCESS_TOKEN'],
-    access_token_secret=os.environ['TWITTER_ACCESS_TOKEN_SECRET']
+    bearer_token=settings.twitter_token,
+    consumer_key=settings.twitter_api_key,
+    consumer_secret=settings.twitter_api_secret,
+    access_token=settings.twitter_access_token,
+    access_token_secret=settings.twitter_access_token_secret
 )
 
+
 last_paginated_users_max = 0
-page_size = 100
+page_size = 800
+last_paginated_followers_max = 0
+followers_page_size = 10
 
 def get_db():
     db = SessionLocal()
@@ -158,15 +172,17 @@ def read_tweets_of_following_by_user_id(user_id: int, db: Session = Depends(get_
 
 @app.post("/api/twitter_users/{twitter_user_id}/following")
 def get_following_by_user_id(twitter_user_id: str, db: Session = Depends(get_db), max_results: Optional[int] = 1000):
-    following = client.get_users_following(id=twitter_user_id,user_auth=True, max_results=max_results)
+    following = client.get_users_following(id=twitter_user_id,user_auth=True, max_results=max_results, user_fields=['name', 'profile_image_url', 'username', 'id'])
 
     counter = 0
-    for following_user in following.data:
-        twitter_user = crud.get_twitter_user(db=db, twitter_user_id=following_user.id)
-        if not twitter_user:
-            create_twitter_user_from_id(twitter_user_id=following_user.id, db=db)
-            create_follows(schemas.FollowCreate(follower_id=twitter_user_id, following_id=following_user.id), db=db)
-            counter = counter + 1
+    if following.data:
+        for following_user in following.data:
+            twitter_user = crud.get_twitter_user(db=db, twitter_user_id=following_user.id)
+            if not twitter_user:
+                twitter_user_create = schemas.TwitterUserCreate(id=following_user.id, name=following_user.name, profile_image_url=following_user.profile_image_url, username=following_user.username)
+                create_twitter_user(twitter_user=twitter_user_create, db=db)
+                create_follows(schemas.FollowCreate(follower_id=twitter_user_id, following_id=following_user.id), db=db)
+                counter = counter + 1
 
     return f'{counter} users created'
     
@@ -226,7 +242,7 @@ def create_tweets_of_following_by_id(twitter_user_id: str, db: Session = Depends
 def fill_tree_for_user(twitter_user_id: str, db: Session = Depends(get_db)):
     #print('Started filling trees')
     get_following_by_user_id(twitter_user_id=twitter_user_id, db=db, max_results=400)
-    tweets_created = create_tweets_of_following_by_id(twitter_user_id=twitter_user_id, db=db)
+    create_tweets_of_following_by_id(twitter_user_id=twitter_user_id, db=db)
     #print(tweets_created + ' tweets created')
 
 
@@ -245,7 +261,9 @@ def start_fill_tree_task(user_id: int, background_tasks: BackgroundTasks, db: Se
 
 
 
-def get_new_tweets_from_all_twitter_users():
+@app.on_event("startup")
+@repeat_every(seconds=60*60) # 8 hour
+def get_new_tweets_task():
     db = SessionLocal()
     global last_paginated_users_max
     global page_size
@@ -255,22 +273,27 @@ def get_new_tweets_from_all_twitter_users():
         last_paginated_users_max = 0
     else:    
         for twitter_user in twitter_users:
-            response = create_tweets_of_a_twitter_user_by_id(twitter_user_id=twitter_user.id, db=db)
+            create_tweets_of_a_twitter_user_by_id(twitter_user_id=twitter_user.id, db=db)
             #print(f'{response} from {twitter_user.name}')
     #print('Done getting new tweets')
 
 
-
 @app.on_event("startup")
-@repeat_every(seconds=60*60) # 8 hour
-def get_new_tweets_task():
-    #print('Started running get new tweets task')
-    get_new_tweets_from_all_twitter_users()
-
-@app.on_event("startup")
-@repeat_every(seconds=60*60*24) # 24 hours
+@repeat_every(seconds=60*15) # 24 hours/15 minutes
 def get_new_followings_task():
-    db = SessionLocal()
-    users = read_users(skip=0, limit=100, db=db)
-    for user in users:
-        get_following_by_user_id(twitter_user_id=user.twitter_user_id, db=db)
+    if settings.get_followers:
+        db = SessionLocal()
+        users = crud.get_users(db=db, skip=0, limit=100)
+        for user in users: #notably this pagination doesnt work yet for multiple users
+            get_following_by_user_id(twitter_user_id=user.twitter_user_id, db=db)
+            twitter_user = crud.get_twitter_user(db=db, twitter_user_id=user.twitter_user_id)
+            counter = 0
+            global last_paginated_followers_max, followers_page_size
+            if last_paginated_followers_max > len(twitter_user.following):
+                last_paginated_followers_max = 0
+            for following in twitter_user.following:
+                if (counter >= last_paginated_followers_max and counter < last_paginated_followers_max + followers_page_size):
+                    response = get_following_by_user_id(twitter_user_id=following.following_id, db=db)
+                    print(response)
+                counter = counter + 1
+        last_paginated_followers_max = last_paginated_followers_max + page_size

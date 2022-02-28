@@ -192,11 +192,22 @@ def read_follows(db: Session = Depends(get_db)):
     return follows
 
 
+def get_tweets_time_stamp(e):
+    return e.time_stamp
+
 @app.post("/api/twitter_user/{twitter_user_id}/tweets")
 def create_tweets_of_a_twitter_user_by_id(twitter_user_id: str, db: Session = Depends(get_db)):
 
-    tweets = client.get_users_tweets(id=twitter_user_id, user_auth=True, max_results=10, tweet_fields=['entities','created_at'])
-    
+    twitter_user = crud.get_twitter_user(db=db, twitter_user_id=twitter_user_id)
+
+    tweets = []
+    if len(twitter_user.tweets) > 0:
+        sorted_tweets = twitter_user.tweets
+        sorted_tweets.sort(key=get_tweets_time_stamp, reverse=True)
+        latest_id = sorted_tweets[0].id
+        tweets = client.get_users_tweets(id=twitter_user_id, user_auth=True, max_results=10, tweet_fields=['entities','created_at'], since_id=latest_id)
+    else:
+        tweets = client.get_users_tweets(id=twitter_user_id, user_auth=True, max_results=10, tweet_fields=['entities','created_at'])
     counter = 0
     
     #print(f'Twitter user ID = {twitter_user_id}')
@@ -221,7 +232,7 @@ def create_tweets_of_a_twitter_user_by_id(twitter_user_id: str, db: Session = De
                 create_tweet(tweet=tweet_create, db=db)
                 counter = counter + 1
     
-    
+    print(f'{counter} tweets created')
     return f'{counter} tweets created'
 
 

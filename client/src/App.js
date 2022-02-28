@@ -14,6 +14,8 @@ class LinkList extends React.Component {
     this.getLinks = this.getLinks.bind(this);
     this.fillTree = this.fillTree.bind(this);
 
+    this.getLinks();
+
   }
 
   fillTree() {

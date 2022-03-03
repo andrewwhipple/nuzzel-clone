@@ -2,10 +2,9 @@ from curses.ascii import HT
 from typing import Optional, List
 from webbrowser import get
 
-import os
 import tweepy
 
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 
 from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks
 from fastapi_utils.tasks import repeat_every
@@ -232,7 +231,7 @@ def create_tweets_of_a_twitter_user_by_id(twitter_user_id: str, db: Session = De
                 create_tweet(tweet=tweet_create, db=db)
                 counter = counter + 1
     
-    print(f'{counter} tweets created')
+    #print(f'{counter} tweets created')
     return f'{counter} tweets created'
 
 
@@ -305,6 +304,6 @@ def get_new_followings_task():
             for following in twitter_user.following:
                 if (counter >= last_paginated_followers_max and counter < last_paginated_followers_max + followers_page_size):
                     response = get_following_by_user_id(twitter_user_id=following.following_id, db=db)
-                    print(response)
+                    #print(response)
                 counter = counter + 1
         last_paginated_followers_max = last_paginated_followers_max + page_size

@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     twitter_access_token: str
     twitter_access_token_secret: str
     get_followers: bool = False
+    last_paginated_users_max: int = 0
+    page_size: int = 800
+    last_paginated_followers_max: int = 0
+    followers_page_size: int = 10
 
 settings = Settings()
 app = FastAPI()
@@ -37,10 +41,7 @@ client = tweepy.Client(
 )
 
 
-last_paginated_users_max = 0
-page_size = 800
-last_paginated_followers_max = 0
-followers_page_size = 10
+
 
 def get_db():
     db = SessionLocal()
@@ -275,12 +276,10 @@ def start_fill_tree_task(user_id: int, background_tasks: BackgroundTasks, db: Se
 @repeat_every(seconds=60*60) # 8 hour
 def get_new_tweets_task():
     db = SessionLocal()
-    global last_paginated_users_max
-    global page_size
-    twitter_users = crud.get_twitter_users(db=db, skip=last_paginated_users_max, limit=page_size)
-    last_paginated_users_max = last_paginated_users_max + page_size
+    twitter_users = crud.get_twitter_users(db=db, skip=settings.last_paginated_users_max, limit=settings.page_size)
+    settings.last_paginated_users_max = settings.last_paginated_users_max + settings.page_size
     if not twitter_users:
-        last_paginated_users_max = 0
+        settings.last_paginated_users_max = 0
     else:    
         for twitter_user in twitter_users:
             create_tweets_of_a_twitter_user_by_id(twitter_user_id=twitter_user.id, db=db)
@@ -298,12 +297,12 @@ def get_new_followings_task():
             get_following_by_user_id(twitter_user_id=user.twitter_user_id, db=db)
             twitter_user = crud.get_twitter_user(db=db, twitter_user_id=user.twitter_user_id)
             counter = 0
-            global last_paginated_followers_max, followers_page_size
-            if last_paginated_followers_max > len(twitter_user.following):
-                last_paginated_followers_max = 0
+
+            if settings.last_paginated_followers_max > len(twitter_user.following):
+                settings.last_paginated_followers_max = 0
             for following in twitter_user.following:
-                if (counter >= last_paginated_followers_max and counter < last_paginated_followers_max + followers_page_size):
+                if (counter >= settings.last_paginated_followers_max and counter < settings.last_paginated_followers_max + settings.followers_page_size):
                     response = get_following_by_user_id(twitter_user_id=following.following_id, db=db)
                     #print(response)
                 counter = counter + 1
-        last_paginated_followers_max = last_paginated_followers_max + page_size
+        settings.last_paginated_followers_max = settings.last_paginated_followers_max + settings.followers_page_size

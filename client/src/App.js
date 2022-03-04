@@ -3,6 +3,11 @@ import React from 'react'
 import logo from './logo.svg';
 import './App.css';
 
+// React Bootstrap imports
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+
 
 class LinkList extends React.Component {
   constructor(props) {
@@ -167,21 +172,23 @@ class Link extends React.Component {
 
     return (
       <div class="link">
-        <div class="row>">
-          <div class="column">
-            <p>A link has: </p>
-            <ul>
-              <li>The link url: <a href={this.props.link}>{this.props.link}</a></li>
-            </ul>
-          </div>
-          <div class="column">
-            <p>And also:</p>
-            <ul>
-              <li>The number of people who shared it: {this.props.sharers.length}</li>
-              <li>The names of the people who shared it: {sharer_links}</li>  
-            </ul>
-          </div>
-        </div>
+        <Container>
+          <Row>
+            <Col>
+              <p>A link has: </p>
+              <ul>
+                <li>The link url: <a href={this.props.link}>{this.props.link}</a></li>
+              </ul>
+            </Col>
+            <Col>
+              <p>And also:</p>
+              <ul>
+                <li>The number of people who shared it: {this.props.sharers.length}</li>
+                <li>The names of the people who shared it: {sharer_links}</li>  
+              </ul>
+            </Col>
+          </Row>
+        </Container>
       </div>
     )
   }

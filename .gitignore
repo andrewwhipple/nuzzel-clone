@@ -132,3 +132,13 @@ dmypy.json
 sql_app.db
 client/package-lock.json
 .vscode/launch.json
+
+# Dropbox stuff I think
+.history/
+.DS_Store/
+.DS_Store
+
+#scripts
+get_followers.sh
+secrets copy.sh
+

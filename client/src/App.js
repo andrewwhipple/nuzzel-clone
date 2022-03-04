@@ -165,18 +165,23 @@ class Link extends React.Component {
 
     }
 
-
-
-
-
     return (
       <div class="link">
-        <p>A link has: </p>
-        <ul>
-        <li>The link url: <a href={this.props.link}>{this.props.link}</a></li>
-          <li>The number of people who shared it: {this.props.sharers.length}</li>
-          <li>The names of the people who shared it: {sharer_links}</li>  
-        </ul>
+        <div class="row>">
+          <div class="column">
+            <p>A link has: </p>
+            <ul>
+              <li>The link url: <a href={this.props.link}>{this.props.link}</a></li>
+            </ul>
+          </div>
+          <div class="column">
+            <p>And also:</p>
+            <ul>
+              <li>The number of people who shared it: {this.props.sharers.length}</li>
+              <li>The names of the people who shared it: {sharer_links}</li>  
+            </ul>
+          </div>
+        </div>
       </div>
     )
   }

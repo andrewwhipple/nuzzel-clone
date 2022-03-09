@@ -19,8 +19,10 @@ class LinkList extends React.Component {
     this.getLinks = this.getLinks.bind(this);
     this.fillTree = this.fillTree.bind(this);
 
-    this.getLinks();
+  }
 
+  componentDidMount() {
+    this.getLinks();
   }
 
   fillTree() {
@@ -195,6 +197,26 @@ class Link extends React.Component {
 
 }
 
+
+class Tweet extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+
+  //need to figure out how to refactor the link generator thing to be able to pass relevant props to the Tweet class
+  render() {
+
+    return(
+      <div>
+        <p>"{this.props.text}"</p>
+        <p><a href={this.props.link}>{this.props.name}</a>, {this.props.date}</p>
+      </div>
+
+
+    )
+  }
+}
 
 
 function App() {

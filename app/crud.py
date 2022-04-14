@@ -54,3 +54,8 @@ def create_follow(db: Session, follow: schemas.FollowCreate):
     db.commit()
     db.refresh(db_follow)
     return db_follow
+
+def delete_tweet(db: Session, tweet: schemas.Tweet):
+    db.delete(tweet)
+    db.commit()
+    return f"Tweet {tweet.id} deleted"

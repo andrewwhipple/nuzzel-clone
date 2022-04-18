@@ -6,6 +6,8 @@ models.Base.metadata.create_all(bind=engine)
 from pydantic import BaseSettings
 from typing import Optional
 
+from datetime import datetime
+
 import tweepy
 
 class Settings(BaseSettings):

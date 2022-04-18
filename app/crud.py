@@ -1,3 +1,4 @@
+from datetime import datetime
 from re import L
 from sqlalchemy import schema
 from sqlalchemy.orm import Session
@@ -24,6 +25,9 @@ def get_tweet(db: Session, tweet_id: str):
 
 def get_follows(db: Session):
     return db.query(models.Follow).all()
+
+def get_tweets_before_date(db: Session, date: datetime):
+    return db.query(models.Tweet).filter(models.Tweet.time_stamp < date).all()
 
 # creates
 

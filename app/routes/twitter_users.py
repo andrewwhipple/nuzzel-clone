@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException
-from datetime import datetime, timedelta
 
 from app import crud, dependencies
 from app.utils import twitter
@@ -55,12 +54,12 @@ def read_tweets_of_following_by_twitter_user_id(twitter_user_id: str, db: depend
             for tweet in following.tweets:
                 if urls_only:
                     if (not tweet.url == "") and (tweet.url.find("twitter.com") == -1):
-                        if (datetime.now() - tweet.time_stamp) < timedelta(hours=time_limit): #converting a time_limit in hours to seconds
+                        if (dependencies.datetime.now() - tweet.time_stamp) < dependencies.timedelta(hours=time_limit): #converting a time_limit in hours to seconds
                             tweet.name = following.name
                             tweet.username = following.username
                             tweets.append(tweet)
                 else:
-                    if (datetime.now() - tweet.time_stamp) < timedelta(hours=time_limit): #converting a time_limit in hours to seconds
+                    if (dependencies.datetime.now() - tweet.time_stamp) < dependencies.timedelta(hours=time_limit): #converting a time_limit in hours to seconds
                         tweet.name = following.name
                         tweet.username = following.username
                         tweets.append(tweet)

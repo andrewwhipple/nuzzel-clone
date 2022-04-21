@@ -1,4 +1,3 @@
-from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from app import crud, dependencies
 
@@ -21,7 +20,7 @@ def delete_tweet(tweet_id: str, db: dependencies.Session = Depends(dependencies.
 
 @router.delete("/api/tweets/old")
 def delete_old_tweets(db: dependencies.Session = Depends(dependencies.get_db)):
-    before_date = dependencies.datetime.now() - timedelta(days=10)
+    before_date = dependencies.datetime.now() - dependencies.timedelta(days=10)
     db_tweets = crud.get_tweets_before_date(db=db, date=before_date)
     counter = 0
     for tweet in db_tweets:

@@ -4,18 +4,18 @@ from app import crud, dependencies
 from app.utils import twitter
 from app.routes import follows, tweets
 
-router = APIRouter()
+router = APIRouter(prefix="/api/twitter_users")
 
-@router.get("/api/twitter_users")
+@router.get("/")
 def read_twitter_users(skip: int = 0, limit: int = 100, db: dependencies.Session = Depends(dependencies.get_db)):
     twitter_users = crud.get_twitter_users(db, skip=skip, limit=limit)
     return twitter_users
 
-@router.post("/api/twitter_users", response_model=dependencies.schemas.TwitterUser)
+@router.post("/", response_model=dependencies.schemas.TwitterUser)
 def create_twitter_user_route(twitter_user: dependencies.schemas.TwitterUserCreate, db: dependencies.Session = Depends(dependencies.get_db)):
     return twitter.create_twitter_user(twitter_user=twitter_user, db=db)
 
-@router.post("/api/twitter_users/{twitter_user_id}", response_model=dependencies.schemas.TwitterUser)
+@router.post("/{twitter_user_id}", response_model=dependencies.schemas.TwitterUser)
 def create_twitter_user_from_id(twitter_user_id: str, db: dependencies.Session = Depends(dependencies.get_db)):
     db_twitter_user = crud.get_twitter_user(db=db, twitter_user_id=twitter_user_id)
     if db_twitter_user:
@@ -24,14 +24,14 @@ def create_twitter_user_from_id(twitter_user_id: str, db: dependencies.Session =
     db_twitter_user = twitter.create_twitter_user(twitter_user=twitter_user_create, db=db)
     return db_twitter_user
 
-@router.get("/api/twitter_user/{twitter_user_id}")
+@router.get("/{twitter_user_id}")
 def read_twitter_user_by_id(twitter_user_id: str, db: dependencies.Session = Depends(dependencies.get_db)):
     twitter_user = crud.get_twitter_user(db, twitter_user_id=twitter_user_id)
     if twitter_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return twitter_user
 
-@router.get("/api/twitter_user/{twitter_user_id}/tweets")
+@router.get("/{twitter_user_id}/tweets")
 def read_tweets_by_twitter_user_id(twitter_user_id: str, db: dependencies.Session = Depends(dependencies.get_db)):
     twitter_user = crud.get_twitter_user(db, twitter_user_id=twitter_user_id)
     if twitter_user is None:
@@ -39,7 +39,7 @@ def read_tweets_by_twitter_user_id(twitter_user_id: str, db: dependencies.Sessio
     return twitter_user.tweets
 
 
-@router.get("/api/twitter_user/{twitter_user_id}/following_tweets")
+@router.get("/{twitter_user_id}/following_tweets")
 def read_tweets_of_following_by_twitter_user_id(twitter_user_id: str, db: dependencies.Session = Depends(dependencies.get_db), time_limit: dependencies.Optional[int] = None, urls_only: dependencies.Optional[bool] = False):
     twitter_user = crud.get_twitter_user(db, twitter_user_id=twitter_user_id)
     if twitter_user is None:
@@ -75,7 +75,7 @@ def read_tweets_of_following_by_twitter_user_id(twitter_user_id: str, db: depend
 
     return tweets
 
-@router.post("/api/twitter_users/{twitter_user_id}/following")
+@router.post("/{twitter_user_id}/following")
 def get_following_by_user_id(twitter_user_id: str, db: dependencies.Session = Depends(dependencies.get_db), max_results: dependencies.Optional[int] = 1000):
     following = dependencies.client.get_users_following(id=twitter_user_id,user_auth=True, max_results=max_results, user_fields=['name', 'profile_image_url', 'username', 'id'])
 
@@ -91,7 +91,7 @@ def get_following_by_user_id(twitter_user_id: str, db: dependencies.Session = De
 
     return f'{counter} users created'
 
-@router.post("/api/twitter_user/{twitter_user_id}/tweets")
+@router.post("/{twitter_user_id}/tweets")
 def create_tweets_of_a_twitter_user_by_id(twitter_user_id: str, db: dependencies.Session = Depends(dependencies.get_db)):
 
     twitter_user = crud.get_twitter_user(db=db, twitter_user_id=twitter_user_id)
@@ -126,7 +126,7 @@ def create_tweets_of_a_twitter_user_by_id(twitter_user_id: str, db: dependencies
     
     return f'{counter} tweets created'
 
-@router.post("/api/twitter_user/{twitter_user_id}/following_tweets")
+@router.post("/{twitter_user_id}/following_tweets")
 def create_tweets_of_following_by_id(twitter_user_id: str, db: dependencies.Session = Depends(dependencies.get_db)):
     twitter_user = crud.get_twitter_user(db=db, twitter_user_id=twitter_user_id)
     if not twitter_user:

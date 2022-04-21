@@ -18,7 +18,7 @@ def create_user(user: dependencies.schemas.UserCreate, db: dependencies.Session 
     db_user = crud.create_user(db=db, user=user)
     return db_user
 
-@router.get("/api/user/{user_id}/following_tweets") #change to users, also need to change in app.js
+@router.get("/api/users/{user_id}/following_tweets") #change to users, also need to change in app.js
 def read_tweets_of_following_by_user_id(user_id: int, db: dependencies.Session = Depends(dependencies.get_db), time_limit: dependencies.Optional[int] = None, urls_only: dependencies.Optional[bool] = False):
     user = crud.get_user(db=db, user_id=user_id)
     if user is None:

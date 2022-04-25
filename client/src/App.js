@@ -104,7 +104,6 @@ class LinkList extends React.Component {
         {linksArray}
         <div class="buttons">
           <button type="button" onClick={this.getLinks}>Refresh</button>
-          <button type="button" onClick={this.fillTree}>Fill tree</button>
         </div>
         
       </div>

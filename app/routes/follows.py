@@ -5,8 +5,8 @@ from app import crud, dependencies
 router = APIRouter(prefix="/api/follows")
 
 @router.get("/")
-def read_follows(db: dependencies.Session = Depends(dependencies.get_db)):
-    follows = crud.get_follows(db=db)
+def read_follows(skip: int = 0, limit: int = 100, db: dependencies.Session = Depends(dependencies.get_db)):
+    follows = crud.get_follows(db=db, skip=skip, limit=limit)
     return follows
 
 @router.post("/")

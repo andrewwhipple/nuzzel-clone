@@ -11,6 +11,11 @@ def create_tweet(tweet: dependencies.schemas.Tweet, db: dependencies.Session = D
     db_tweet = crud.create_tweet(db, tweet=tweet)
     return db_tweet
 
+@router.get("/")
+def read_tweets(skip: int = 0, limit: int = 100, db: dependencies.Session = Depends(dependencies.get_db)):
+    tweets = crud.get_tweets(db=db, skip=skip, limit=limit)
+    return tweets
+
 @router.delete("/")
 def delete_tweet(tweet_id: str, db: dependencies.Session = Depends(dependencies.get_db)):
     db_tweet = crud.get_tweet(db, tweet_id=tweet_id)

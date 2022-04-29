@@ -21,6 +21,9 @@ def get_twitter_users(db: Session, skip: int = 0, limit: int = 100):
 def get_tweet(db: Session, tweet_id: str):
     return db.query(models.Tweet).filter(models.Tweet.id == tweet_id).first()
 
+def get_tweets(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Tweet).offset(skip).limit(limit).all()
+
 def get_follows(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Follow).offset(skip).limit(limit).all()
 

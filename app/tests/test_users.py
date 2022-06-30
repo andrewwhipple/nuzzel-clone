@@ -1,9 +1,9 @@
 from fastapi.testclient import TestClient
 from unittest.mock import patch
 
-import pytest
+#import pytest
 from app.main import app as meow
-from app import crud
+#from app import crud
 
 client = TestClient(meow)
 

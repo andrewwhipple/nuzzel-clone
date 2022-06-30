@@ -141,4 +141,4 @@ client/package-lock.json
 #scripts
 get_followers.sh
 secrets copy.sh
-
+secrets.sh

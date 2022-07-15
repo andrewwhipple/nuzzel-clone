@@ -44,35 +44,7 @@ def read_tweets_of_following_by_twitter_user_id(twitter_user_id: str, db: depend
     twitter_user = crud.get_twitter_user(db, twitter_user_id=twitter_user_id)
     if twitter_user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    following = twitter_user.following
-
-    tweets = []
-
-    for follow in following:
-        following = crud.get_twitter_user(db, twitter_user_id=follow.following_id)
-        if time_limit:
-            for tweet in following.tweets:
-                if urls_only:
-                    if (not tweet.url == "") and (tweet.url.find("twitter.com") == -1):
-                        if (dependencies.datetime.now() - tweet.time_stamp) < dependencies.timedelta(hours=time_limit): #converting a time_limit in hours to seconds
-                            tweet.name = following.name
-                            tweet.username = following.username
-                            tweets.append(tweet)
-                else:
-                    if (dependencies.datetime.now() - tweet.time_stamp) < dependencies.timedelta(hours=time_limit): #converting a time_limit in hours to seconds
-                        tweet.name = following.name
-                        tweet.username = following.username
-                        tweets.append(tweet)
-        else:
-            if urls_only:
-                for tweet in following.tweets:
-                    if (not tweet.url == "") and (tweet.url.find("twitter.com") == -1):
-                        tweet.name = following.name
-                        tweet.username = following.username
-                        tweets.append(tweet)
-            else:
-                tweets = tweets + following.tweets
-
+    tweets = crud.get_following_tweets(db=db, twitter_user_id=twitter_user_id, time_limit=time_limit)
     return tweets
 
 @router.post("/{twitter_user_id}/following")
@@ -117,12 +89,12 @@ def create_tweets_of_a_twitter_user_by_id(twitter_user_id: str, db: dependencies
                     for url in entities_data['urls']:
                         tweet_url = url['expanded_url']
             
-            tweet_create = dependencies.schemas.Tweet(id=tweet.id, url=tweet_url, text=tweet.text, twitter_user_id=twitter_user_id, time_stamp=tweet.created_at)
+                    tweet_create = dependencies.schemas.Tweet(id=tweet.id, url=tweet_url, text=tweet.text, twitter_user_id=twitter_user_id, time_stamp=tweet.created_at)
 
-            db_tweet = crud.get_tweet(db=db, tweet_id=tweet_create.id)
-            if not db_tweet:
-                tweets.create_tweet(tweet=tweet_create, db=db)
-                counter = counter + 1
+                    db_tweet = crud.get_tweet(db=db, tweet_id=tweet_create.id)
+                    if not db_tweet:
+                        tweets.create_tweet(tweet=tweet_create, db=db)
+                        counter = counter + 1
     
     return f'{counter} tweets created'
 

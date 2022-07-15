@@ -68,10 +68,17 @@ def delete_tweet(db: Session, tweet: schemas.Tweet):
 
 def get_following_tweets(db: Session, twitter_user_id: str, time_limit: dependencies.Optional[int] = None):
     following = db.query(models.Follow.following_id).filter(models.Follow.follower_id == twitter_user_id).all()
+    following_set = set()
+    for follow in following:
+        following_set.add(follow.following_id)
+    
     if time_limit:
         time_limit_time_stamp = dependencies.datetime.now() - dependencies.timedelta(hours=time_limit)
-        tweets = db.query(models.Tweet.id, models.Tweet.url, models.Tweet.text, models.Tweet.time_stamp, models.Tweet.twitter_user_id, models.TwitterUser.name, models.TwitterUser.username).join(models.TwitterUser, models.Tweet.twitter_user_id == models.TwitterUser.id).filter(models.Tweet.twitter_user_id in following, models.Tweet.time_stamp > time_limit_time_stamp).all()
+        print(time_limit_time_stamp)
+        print(following)
+        tweets = db.query(models.Tweet.id, models.Tweet.url, models.Tweet.text, models.Tweet.time_stamp, models.Tweet.twitter_user_id, models.TwitterUser.name, models.TwitterUser.username).join(models.TwitterUser, models.Tweet.twitter_user_id == models.TwitterUser.id).filter(models.Tweet.twitter_user_id.in_(following_set), models.Tweet.time_stamp > time_limit_time_stamp).all()
     else:
-        tweets = db.query(models.Tweet.id, models.Tweet.url, models.Tweet.text, models.Tweet.time_stamp, models.Tweet.twitter_user_id, models.TwitterUser.name, models.TwitterUser.username).join(models.TwitterUser, models.Tweet.twitter_user_id == models.TwitterUser.id).filter(models.Tweet.twitter_user_id in following).all()
+        print(following)
+        tweets = db.query(models.Tweet.id, models.Tweet.url, models.Tweet.text, models.Tweet.time_stamp, models.Tweet.twitter_user_id, models.TwitterUser.name, models.TwitterUser.username).join(models.TwitterUser, models.Tweet.twitter_user_id == models.TwitterUser.id).filter(models.Tweet.twitter_user_id.in_(following_set)).all()
 
     return tweets

@@ -1,3 +1,5 @@
+import pytest
+
 from unittest import mock
 from fastapi.testclient import TestClient
 from unittest.mock import patch
@@ -11,10 +13,10 @@ client = TestClient(meow)
 
 
 
-# crud.get_twitter_user
+
 
 def mocked_get_twitter_user(*args, **kwargs):
-    #print(twitter_user_id)
+
     user = TwitterUser()
 
     if kwargs.get('twitter_user_id') == '12345':
@@ -45,8 +47,11 @@ def mocked_get_twitter_user(*args, **kwargs):
         tweet2 = Tweet()
         tweet3 = Tweet()
 
-        tweet1.twitter_user_id = tweet2.twitter_user_id = tweet3.twitter_user_id = "22222"
-        tweet1.url = tweet3.url = ""
+        tweet1.twitter_user_id = "22222"
+        tweet2.twitter_user_id = "22222"
+        tweet3.twitter_user_id = "22222"
+        tweet1.url = ""
+        tweet3.url = ""
         tweet2.url = "https://thebestwebsite.com"
         tweet1.id = '1'
         tweet2.id = '2'
@@ -59,7 +64,7 @@ def mocked_get_twitter_user(*args, **kwargs):
         tweet2.time_stamp = "2022-05-28T08:36:59"
         tweet3.time_stamp = "2022-05-31T14:44:59"
 
-        user.tweets = [tweet1, tweet2, tweet3]
+        user.tweets = [tweet2]
         
         return user
     else:
@@ -67,11 +72,9 @@ def mocked_get_twitter_user(*args, **kwargs):
 
 @patch('app.routes.users.crud.get_twitter_user', side_effect=mocked_get_twitter_user)
 def test_get_following_tweets(mocked_get_twitter_user):
-    request_url = f'/api/twitter_users/{12345}/following_tweets'
+    request_url = f'/api/twitter_users/{12345}/following_tweets?urls_only=true'
     response = client.get(url=request_url)
-    print(response)
-    #print(response.status_code)
-    #print(response.json())
+
     assert response.status_code == 200
 
 
@@ -79,5 +82,5 @@ def test_get_following_tweets(mocked_get_twitter_user):
 def test_get_following_tweets_user_not_found(mocked_get_twitter_user):
     request_url = f'/api/twitter_users/{55555}/following_tweets'
     response = client.get(url=request_url)
-    print(response.status_code)
+
     assert response.status_code == 404

@@ -1,9 +1,10 @@
-from sqlite3 import Date
 from xmlrpc.client import DateTime
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
+
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from .database import Base
+
 
 class User(Base):
     __tablename__ = "users"
@@ -33,6 +34,7 @@ class Follow(Base):
     follower = relationship("TwitterUser", back_populates="following")
     following_id = Column(String)
 
+
 class Tweet(Base):
     __tablename__ = "tweets"
 
@@ -43,5 +45,3 @@ class Tweet(Base):
     twitter_user_id = Column(String, ForeignKey("twitter_users.id"))
     twitter_user = relationship("TwitterUser", back_populates="tweets")
     time_stamp = Column(DateTime)
-    
-

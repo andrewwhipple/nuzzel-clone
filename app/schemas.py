@@ -1,13 +1,12 @@
-from datetime import date, datetime
-from typing import List, Optional
+from datetime import datetime
+from typing import List
 
-from typing import Optional
 from pydantic import BaseModel
-
 
 
 class UserCreate(BaseModel):
     twitter_user_id: str
+
 
 class User(UserCreate):
     id: int
@@ -21,11 +20,13 @@ class FollowCreate(BaseModel):
     follower_id: str
     following_id: str
 
+
 class Follow(FollowCreate):
     id: int
-    
+
     class Config:
         orm_mode = True
+
 
 class Tweet(BaseModel):
     id: str
@@ -37,6 +38,7 @@ class Tweet(BaseModel):
     class Config:
         orm_mode = True
 
+
 class TwitterUserCreate(BaseModel):
     id: str
     name: str
@@ -45,11 +47,9 @@ class TwitterUserCreate(BaseModel):
 
 
 class TwitterUser(TwitterUserCreate):
-    
+
     tweets: List[Tweet] = []
     following: List[Follow] = []
 
     class Config:
         orm_mode = True
-
-

@@ -1,14 +1,14 @@
+from sqlalchemy.orm import Session
+
 from app import models, schemas
 from app.database import SessionLocal, engine
-from sqlalchemy.orm import Session
+
 models.Base.metadata.create_all(bind=engine)
 
-from pydantic import BaseSettings
-from typing import Optional
-
-from datetime import datetime, timedelta
 
 import tweepy
+from pydantic import BaseSettings
+
 
 class Settings(BaseSettings):
     twitter_token: str
@@ -22,7 +22,9 @@ class Settings(BaseSettings):
     last_paginated_followers_max: int = 0
     followers_page_size: int = 10
 
+
 settings = Settings()
+
 
 def get_db():
     db = SessionLocal()
@@ -32,11 +34,10 @@ def get_db():
         db.close()
 
 
-
 client = tweepy.Client(
     bearer_token=settings.twitter_token,
     consumer_key=settings.twitter_api_key,
     consumer_secret=settings.twitter_api_secret,
     access_token=settings.twitter_access_token,
-    access_token_secret=settings.twitter_access_token_secret
+    access_token_secret=settings.twitter_access_token_secret,
 )

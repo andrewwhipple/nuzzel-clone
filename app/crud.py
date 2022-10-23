@@ -101,8 +101,6 @@ def get_following_tweets(
 
     if time_limit:
         time_limit_time_stamp = datetime.now() - timedelta(hours=time_limit)
-        print(time_limit_time_stamp)
-        print(following)
         tweets = (
             db.query(
                 models.Tweet.id,
@@ -124,7 +122,6 @@ def get_following_tweets(
             .all()
         )
     else:
-        print(following)
         tweets = (
             db.query(
                 models.Tweet.id,

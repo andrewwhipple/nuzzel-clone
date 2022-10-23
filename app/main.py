@@ -35,8 +35,6 @@ def get_new_tweets_task():
             twitter_users.create_tweets_of_a_twitter_user_by_id(
                 twitter_user_id=twitter_user.id, db=db
             )
-            # print(f'{response} from {twitter_user.name}')
-    # print('Done getting new tweets')
 
 
 @app.on_event("startup")
@@ -63,7 +61,6 @@ def get_new_followings_task():
                     response = twitter_users.get_following_by_user_id(
                         twitter_user_id=following.following_id, db=db
                     )
-                    # print(response)
                 counter = counter + 1
         settings.last_paginated_followers_max = (
             settings.last_paginated_followers_max + settings.followers_page_size

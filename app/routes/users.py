@@ -53,14 +53,12 @@ def read_tweets_of_following_by_user_id(
 
 
 def fill_tree_for_user(twitter_user_id: str, db: Session = Depends(get_db)):
-    # print('Started filling trees')
     twitter_users.get_following_by_user_id(
         twitter_user_id=twitter_user_id, db=db, max_results=400
     )
     twitter_users.create_tweets_of_following_by_id(
         twitter_user_id=twitter_user_id, db=db
     )
-    # print(tweets_created + ' tweets created')
 
 
 @router.post("/{user_id}/fill_tree")

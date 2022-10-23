@@ -1,8 +1,9 @@
-from sqlalchemy import schema
-from sqlalchemy.orm import Session
-from sqlalchemy.sql.functions import user
+from datetime import datetime, timedelta
+from typing import Optional
 
-from app import dependencies, models, schemas
+from sqlalchemy.orm import Session
+
+from app import models, schemas
 
 # gets
 
@@ -39,7 +40,7 @@ def get_follows(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Follow).offset(skip).limit(limit).all()
 
 
-def get_tweets_before_date(db: Session, date: dependencies.datetime):
+def get_tweets_before_date(db: Session, date: datetime):
     return db.query(models.Tweet).filter(models.Tweet.time_stamp < date).all()
 
 
@@ -87,7 +88,7 @@ def delete_tweet(db: Session, tweet: schemas.Tweet):
 
 
 def get_following_tweets(
-    db: Session, twitter_user_id: str, time_limit: dependencies.Optional[int] = None
+    db: Session, twitter_user_id: str, time_limit: Optional[int] = None
 ):
     following = (
         db.query(models.Follow.following_id)
@@ -99,9 +100,7 @@ def get_following_tweets(
         following_set.add(follow.following_id)
 
     if time_limit:
-        time_limit_time_stamp = dependencies.datetime.now() - dependencies.timedelta(
-            hours=time_limit
-        )
+        time_limit_time_stamp = datetime.now() - timedelta(hours=time_limit)
         print(time_limit_time_stamp)
         print(following)
         tweets = (

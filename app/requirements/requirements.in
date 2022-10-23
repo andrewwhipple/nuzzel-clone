@@ -1,0 +1,4 @@
+fastapi
+tweepy
+sqlalchemy
+fastapi-utils

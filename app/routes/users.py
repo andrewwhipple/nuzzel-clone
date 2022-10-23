@@ -1,28 +1,34 @@
+from typing import Optional
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
-from app import crud, dependencies
+from app.crud import create_user, get_twitter_user, get_user, get_users
+from app.database import get_db
 from app.routes import twitter_users
+from app.schemas import User, UserCreate
 from app.utils import twitter
 
 router = APIRouter(prefix="/api/users")
+
+from sqlalchemy.orm import Session
 
 
 @router.get("/")
 def read_users(
     skip: int = 0,
     limit: int = 100,
-    db: dependencies.Session = Depends(dependencies.get_db),
+    db: Session = Depends(get_db),
 ):
-    users = crud.get_users(db, skip=skip, limit=limit)
+    users = get_users(db, skip=skip, limit=limit)
     return users
 
 
-@router.post("/", response_model=dependencies.schemas.User)
-def create_user(
-    user: dependencies.schemas.UserCreate,
-    db: dependencies.Session = Depends(dependencies.get_db),
+@router.post("/", response_model=User)
+def create_user_route(
+    user: UserCreate,
+    db: Session = Depends(get_db),
 ):
-    db_user = crud.create_user(db=db, user=user)
+    db_user = create_user(db=db, user=user)
     return db_user
 
 
@@ -31,11 +37,11 @@ def create_user(
 )  # change to users, also need to change in app.js
 def read_tweets_of_following_by_user_id(
     user_id: int,
-    db: dependencies.Session = Depends(dependencies.get_db),
-    time_limit: dependencies.Optional[int] = None,
-    urls_only: dependencies.Optional[bool] = False,
+    db: Session = Depends(get_db),
+    time_limit: Optional[int] = None,
+    urls_only: Optional[bool] = False,
 ):
-    user = crud.get_user(db=db, user_id=user_id)
+    user = get_user(db=db, user_id=user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return twitter_users.read_tweets_of_following_by_twitter_user_id(
@@ -46,9 +52,7 @@ def read_tweets_of_following_by_user_id(
     )
 
 
-def fill_tree_for_user(
-    twitter_user_id: str, db: dependencies.Session = Depends(dependencies.get_db)
-):
+def fill_tree_for_user(twitter_user_id: str, db: Session = Depends(get_db)):
     # print('Started filling trees')
     twitter_users.get_following_by_user_id(
         twitter_user_id=twitter_user_id, db=db, max_results=400
@@ -63,12 +67,12 @@ def fill_tree_for_user(
 def start_fill_tree_task(
     user_id: int,
     background_tasks: BackgroundTasks,
-    db: dependencies.Session = Depends(dependencies.get_db),
+    db: Session = Depends(get_db),
 ):
-    user = crud.get_user(db=db, user_id=user_id)
+    user = get_user(db=db, user_id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    twitter_user = crud.get_twitter_user(db=db, twitter_user_id=user.twitter_user_id)
+    twitter_user = get_twitter_user(db=db, twitter_user_id=user.twitter_user_id)
     if not twitter_user:
         twitter_user = twitter.create_twitter_user_from_id(
             twitter_user_id=user.twitter_user_id, db=db

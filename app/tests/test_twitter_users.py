@@ -1,6 +1,5 @@
 from unittest.mock import patch
 
-import pytest
 from fastapi.testclient import TestClient
 from itsdangerous import json
 
@@ -65,7 +64,7 @@ def mocked_get_twitter_user(*args, **kwargs):
         return None
 
 
-@patch("app.routes.users.crud.get_twitter_user", side_effect=mocked_get_twitter_user)
+@patch("app.routes.users.get_twitter_user", side_effect=mocked_get_twitter_user)
 def test_get_following_tweets(mocked_get_twitter_user):
     request_url = f"/api/twitter_users/{12345}/following_tweets?urls_only=true"
     response = client.get(url=request_url)
@@ -73,7 +72,7 @@ def test_get_following_tweets(mocked_get_twitter_user):
     assert response.status_code == 200
 
 
-@patch("app.routes.users.crud.get_twitter_user", side_effect=mocked_get_twitter_user)
+@patch("app.routes.users.get_twitter_user", side_effect=mocked_get_twitter_user)
 def test_get_following_tweets_user_not_found(mocked_get_twitter_user):
     request_url = f"/api/twitter_users/{55555}/following_tweets"
     response = client.get(url=request_url)

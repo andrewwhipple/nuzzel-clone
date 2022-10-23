@@ -1,6 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
-from app import crud, dependencies
+from app.crud import create_follow, get_follows
+from app.database import get_db
+from app.schemas import FollowCreate
 
 router = APIRouter(prefix="/api/follows")
 
@@ -9,16 +12,16 @@ router = APIRouter(prefix="/api/follows")
 def read_follows(
     skip: int = 0,
     limit: int = 100,
-    db: dependencies.Session = Depends(dependencies.get_db),
+    db: Session = Depends(get_db),
 ):
-    follows = crud.get_follows(db=db, skip=skip, limit=limit)
+    follows = get_follows(db=db, skip=skip, limit=limit)
     return follows
 
 
 @router.post("/")
 def create_follows(
-    follow: dependencies.schemas.FollowCreate,
-    db: dependencies.Session = Depends(dependencies.get_db),
+    follow: FollowCreate,
+    db: Session = Depends(get_db),
 ):
-    db_follow = crud.create_follow(db, follow=follow)
+    db_follow = create_follow(db, follow=follow)
     return db_follow

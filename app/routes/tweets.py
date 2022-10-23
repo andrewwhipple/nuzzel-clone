@@ -1,19 +1,30 @@
-from fastapi import APIRouter, Depends, HTTPException
+from datetime import datetime, timedelta
 
-from app import crud, dependencies
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from app.crud import (
+    create_tweet,
+    delete_tweet,
+    get_tweet,
+    get_tweets,
+    get_tweets_before_date,
+)
+from app.database import get_db
+from app.schemas import Tweet
 
 router = APIRouter(prefix="/api/tweets")
 
 
 @router.post("/")
-def create_tweet(
-    tweet: dependencies.schemas.Tweet,
-    db: dependencies.Session = Depends(dependencies.get_db),
+def create_tweet_route(
+    tweet: Tweet,
+    db: Session = Depends(get_db),
 ):
-    db_tweet = crud.get_tweet(db, tweet_id=tweet.id)
+    db_tweet = get_tweet(db, tweet_id=tweet.id)
     if db_tweet:
         raise HTTPException(status_code=400, detail="Tweet already exists")
-    db_tweet = crud.create_tweet(db, tweet=tweet)
+    db_tweet = create_tweet(db, tweet=tweet)
     return db_tweet
 
 
@@ -21,26 +32,27 @@ def create_tweet(
 def read_tweets(
     skip: int = 0,
     limit: int = 100,
-    db: dependencies.Session = Depends(dependencies.get_db),
+    db: Session = Depends(get_db),
 ):
-    tweets = crud.get_tweets(db=db, skip=skip, limit=limit)
+    tweets = get_tweets(db=db, skip=skip, limit=limit)
     return tweets
 
 
+delete_tweet
+
+
 @router.delete("/")
-def delete_tweet(
-    tweet_id: str, db: dependencies.Session = Depends(dependencies.get_db)
-):
-    db_tweet = crud.get_tweet(db, tweet_id=tweet_id)
+def delete_tweet(tweet_id: str, db: Session = Depends(get_db)):
+    db_tweet = get_tweet(db, tweet_id=tweet_id)
     if not db_tweet:
         raise HTTPException(status_code=404, detail="Tweet not found")
-    return crud.delete_tweet(db, tweet=db_tweet)
+    return delete_tweet(db, tweet=db_tweet)
 
 
 @router.delete("/old")
-def delete_old_tweets(db: dependencies.Session = Depends(dependencies.get_db)):
-    before_date = dependencies.datetime.now() - dependencies.timedelta(days=10)
-    db_tweets = crud.get_tweets_before_date(db=db, date=before_date)
+def delete_old_tweets(db: Session = Depends(get_db)):
+    before_date = datetime.now() - timedelta(days=10)
+    db_tweets = get_tweets_before_date(db=db, date=before_date)
     counter = 0
     for tweet in db_tweets:
         delete_tweet(tweet_id=tweet.id, db=db)
